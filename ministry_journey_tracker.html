@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>목회 사역 기록</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2d3748;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .api-setup {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .api-setup h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .api-setup p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 500px;
+        }
+
+        .input-section {
+            width: 400px;
+            min-width: 400px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-right: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .input-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .form-group textarea {
+            height: 70px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            color: #6b7280;
+            font-size: 11px;
+            margin-top: 4px;
+            display: block;
+            line-height: 1.3;
+        }
+
+        .btn {
+            background: #4299e1;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #3182ce;
+        }
+
+        .btn:active {
+            background: #2c5aa0;
+        }
+
+        .map-section {
+            flex: 1;
+            background: white;
+            position: relative;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        .records-section {
+            margin: 20px;
+        }
+
+        .records-section h2 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .records-table th {
+            background: #f7fafc;
+            color: #2d3748;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .records-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .records-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .record-number {
+            background: #4299e1;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            margin: 0 auto;
+        }
+
+        .delete-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            background: #c53030;
+        }
+
+        .export-section {
+            margin: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .export-section .btn {
+            width: auto;
+            min-width: 120px;
+            margin: 0;
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .status-message {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            white-space: pre-line;
+            word-wrap: break-word;
+        }
+
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .input-section {
+                width: 100%;
+                min-width: auto;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 6px;
+            }
+
+            .export-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .export-section .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>목회 사역 기록</h1>
+            <p>사역지 이동 경로를 기록하고 관리합니다 (카카오맵 적용)</p>
+        </div>
+
+        <div class="api-setup" id="apiSetupNotice">
+            <h3>🔑 카카오맵 API 키 설정 필요</h3>
+            <p><strong>1단계:</strong> <a href="https://developers.kakao.com" target="_blank">카카오 개발자 사이트</a>에서 계정 생성</p>
+            <p><strong>2단계:</strong> "내 애플리케이션 → 애플리케이션 추가하기"에서 앱 생성</p>
+            <p><strong>3단계:</strong> JavaScript 키를 복사해서 아래에 입력</p>
+            <div style="margin-top: 10px;">
+                <input type="text" id="apiKeyInput" placeholder="카카오 JavaScript API 키를 입력하세요" style="width: 70%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="setApiKey()" style="padding: 8px 15px; background: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">적용</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>새 사역지 등록</h2>
+                <form id="journeyForm">
+                    <div class="form-group">
+                        <label for="date">날짜</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">주소</label>
+                        <input type="text" id="address" placeholder="예: 경기도 남양주시 화도읍 경춘로2247번길 16-19" required>
+                        <small>
+                            카카오맵으로 한국 주소를 정확하게 검색합니다.<br>
+                            도로명주소, 지번주소, 건물명 모두 가능합니다.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="church">교회명</label>
+                        <input type="text" id="church" placeholder="예: 군산교회" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="topic">설교 주제</label>
+                        <textarea id="topic" placeholder="예: 하나님의 사랑과 은혜"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">사역지 추가</button>
+                    <div id="statusMessage"></div>
+                </form>
+            </div>
+
+            <div class="map-section">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <div class="records-section">
+            <h2>사역 기록 목록</h2>
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>날짜</th>
+                        <th>주소</th>
+                        <th>교회명</th>
+                        <th>설교 주제</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="export-section">
+            <button class="btn btn-secondary" onclick="exportToJSON()">데이터 내보내기</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importFromJSON()">
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">데이터 가져오기</button>
+            <button class="btn" onclick="clearAllData()">전체 삭제</button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let map;
+        let geocoder;
+        let records = [];
+        let markers = [];
+        let kakaoApiKey = '';
+
+        // 카카오 API 키 설정
+        function setApiKey() {
+            const keyInput = document.getElementById('apiKeyInput');
+            const key = keyInput.value.trim();
+            
+            if (!key) {
+                alert('API 키를 입력해주세요.');
+                return;
+            }
+            
+            kakaoApiKey = key;
+            
+            // 카카오맵 스크립트 동적 로드
+            const script = document.createElement('script');
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&libraries=services`;
+            script.onload = function() {
+                initKakaoMap();
+                document.getElementById('apiSetupNotice').style.display = 'none';
+                showMessage('카카오맵이 성공적으로 로드되었습니다!', true);
+            };
+            script.onerror = function() {
+                showMessage('API 키가 올바르지 않습니다. 다시 확인해주세요.', false);
+            };
+            document.head.appendChild(script);
+        }
+
+        // 카카오맵 초기화
+        function initKakaoMap() {
+            const container = document.getElementById('map');
+            const options = {
+                center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심
+                level: 7
+            };
+            
+            map = new kakao.maps.Map(container, options);
+            geocoder = new kakao.maps.services.Geocoder();
+            
+            console.log('카카오맵 초기화 완료');
+        }
+
+        // 주소를 좌표로 변환 (카카오 지오코더 사용)
+        function geocodeAddress(address) {
+            return new Promise((resolve, reject) => {
+                if (!geocoder) {
+                    reject(new Error('카카오맵이 로드되지 않았습니다. API 키를 먼저 설정해주세요.'));
+                    return;
+                }
+                
+                geocoder.addressSearch(address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        const coords = {
+                            lat: parseFloat(result[0].y),
+                            lng: parseFloat(result[0].x),
+                            display_name: result[0].address_name || result[0].road_address_name || address
+                        };
+                        resolve(coords);
+                    } else {
+                        reject(new Error(`주소를 찾을 수 없습니다: "${address}"\n\n다음을 확인해주세요:\n• 정확한 주소인지 확인\n• 건물명이나 랜드마크로 검색\n• 상위 주소(동/읍/면)까지만 입력`));
+                    }
+                });
+            });
+        }
+
+        // 마커 추가 (카카오맵 마커)
+        function addMarker(record, index) {
+            const markerNumber = index + 1;
+            const position = new kakao.maps.LatLng(record.coordinates.lat, record.coordinates.lng);
+            
+            // 커스텀 마커 이미지 생성 (SVG 사용)
+            const markerImageSrc = `data:image/svg+xml;base64,${btoa(`
+                <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="16" cy="16" r="14" fill="#4299e1" stroke="white" stroke-width="2"/>
+                    <text x="16" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="bold">${markerNumber}</text>
+                </svg>
+            `)}`;
+            
+            const markerImage = new kakao.maps.MarkerImage(
+                markerImageSrc,
+                new kakao.maps.Size(32, 32),
+                { offset: new kakao.maps.Point(16, 16) }
+            );
+            
+            const marker = new kakao.maps.Marker({
+                position: position,
+                image: markerImage,
+                map: map
+            });
+            
+            // 인포윈도우 생성
+            const infowindow = new kakao.maps.InfoWindow({
+                content: `
+                    <div style="padding: 10px; min-width: 200px; font-size: 13px;">
+                        <h3 style="color: #2d3748; margin-bottom: 8px; font-size: 15px; text-align: center;">
+                            ${markerNumber}번째 사역지
+                        </h3>
+                        <p style="margin: 4px 0;"><strong>날짜:</strong> ${record.date}</p>
+                        <p style="margin: 4px 0;"><strong>교회:</strong> ${record.church}</p>
+                        <p style="margin: 4px 0;"><strong>설교 주제:</strong> ${record.topic}</p>
+                        <p style="margin: 4px 0;"><strong>주소:</strong> ${record.address}</p>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px; padding-top: 6px; border-top: 1px solid #eee;">
+                            <strong>검색 위치:</strong><br>${record.coordinates.display_name}
+                        </p>
+                    </div>
+                `
+            });
+            
+            // 마커 클릭 이벤트
+            kakao.maps.event.addListener(marker, 'click', function() {
+                infowindow.open(map, marker);
+            });
+            
+            markers.push(marker);
+        }
+
+        // 기록 테이블 업데이트
+        function updateRecordsTable() {
+            const tableBody = document.getElementById('recordsTableBody');
+            tableBody.innerHTML = '';
+            
+            records.forEach((record, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td><div class="record-number">${index + 1}</div></td>
+                    <td>${record.date}</td>
+                    <td>${record.address}</td>
+                    <td>${record.church}</td>
+                    <td>${record.topic}</td>
+                    <td><button class="delete-btn" onclick="deleteRecord(${index})">삭제</button></td>
+                `;
+            });
+        }
+
+        // 상태 메시지 표시
+        function showMessage(message, isSuccess = true) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${isSuccess ? 'status-success' : 'status-error'}`;
+            
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 4000);
+        }
+
+        // 폼 제출 처리
+        document.getElementById('journeyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!kakaoApiKey) {
+                showMessage('먼저 카카오 API 키를 설정해주세요.', false);
+                return;
+            }
+            
+            const formData = {
+                date: document.getElementById('date').value,
+                address: document.getElementById('address').value,
+                church: document.getElementById('church').value,
+                topic: document.getElementById('topic').value
+            };
+            
+            try {
+                showMessage('주소를 검색하고 있습니다...', true);
+                
+                const coordinates = await geocodeAddress(formData.address);
+                
+                const record = {
+                    ...formData,
+                    coordinates: coordinates,
+                    id: Date.now()
+                };
+                
+                records.push(record);
+                addMarker(record, records.length - 1);
+                updateRecordsTable();
+                
+                // 폼 초기화
+                document.getElementById('journeyForm').reset();
+                // 오늘 날짜 다시 설정
+                document.getElementById('date').valueAsDate = new Date();
+                
+                // 지도 뷰 조정
+                if (records.length > 1) {
+                    const bounds = new kakao.maps.LatLngBounds();
+                    records.forEach(record => {
+                        bounds.extend(new kakao.maps.LatLng(record.coordinates.lat, record.coordinates.lng));
+                    });
+                    map.setBounds(bounds);
+                } else {
+                    const moveLatLon = new kakao.maps.LatLng(coordinates.lat, coordinates.lng);
+                    map.setCenter(moveLatLon);
+                    map.setLevel(3);
+                }
+                
+                showMessage(`사역지가 추가되었습니다!\n위치: ${coordinates.display_name}`, true);
+                
+            } catch (error) {
+                showMessage(`오류: ${error.message}`, false);
+                console.error('주소 검색 오류:', error);
+            }
+        });
+
+        // 기록 삭제
+        function deleteRecord(index) {
+            if (confirm('이 기록을 삭제하시겠습니까?')) {
+                // 마커 삭제
+                if (markers[index]) {
+                    markers[index].setMap(null);
+                }
+                
+                // 배열에서 제거
+                records.splice(index, 1);
+                markers.splice(index, 1);
+                
+                // 마커와 테이블 재구성
+                markers.forEach(marker => marker.setMap(null));
+                markers = [];
+                
+                records.forEach((record, idx) => {
+                    addMarker(record, idx);
+                });
+                
+                updateRecordsTable();
+                showMessage('기록이 삭제되었습니다.', true);
+            }
+        }
+
+        // 전체 데이터 삭제
+        function clearAllData() {
+            if (confirm('모든 사역 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                records = [];
+                markers.forEach(marker => marker.setMap(null));
+                markers = [];
+                updateRecordsTable();
+                
+                if (map) {
+                    map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
+                    map.setLevel(7);
+                }
+                
+                showMessage('모든 데이터가 삭제되었습니다.', true);
+            }
+        }
+
+        // 데이터 내보내기
+        function exportToJSON() {
+            if (records.length === 0) {
+                showMessage('내보낼 데이터가 없습니다.', false);
+                return;
+            }
+            
+            const dataStr = JSON.stringify(records, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `목회사역기록_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showMessage('데이터가 내보내기되었습니다.', true);
+        }
+
+        // 데이터 가져오기
+        function importFromJSON() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedRecords = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(importedRecords)) {
+                        throw new Error('올바른 형식의 데이터 파일이 아닙니다.');
+                    }
+                    
+                    // 기존 마커 삭제
+                    markers.forEach(marker => marker.setMap(null));
+                    markers = [];
+                    
+                    // 새 데이터 적용
+                    records = importedRecords;
+                    
+                    records.forEach((record, index) => {
+                        if (record.coordinates && map) {
+                            addMarker(record, index);
+                        }
+                    });
+                    
+                    updateRecordsTable();
+                    
+                    if (records.length > 0 && map) {
+                        const bounds = new kakao.maps.LatLngBounds();
+                        records.forEach(record => {
+                            bounds.extend(new kakao.maps.LatLng(record.coordinates.lat, record.coordinates.lng));
+                        });
+                        map.setBounds(bounds);
+                    }
+                    
+                    showMessage(`${records.length}개의 기록이 가져와졌습니다.`, true);
+                    
+                } catch (error) {
+                    showMessage(`데이터 가져오기 실패: ${error.message}`, false);
+                }
+            };
+            reader.readAsText(file);
+            
+            // 파일 입력 초기화
+            document.getElementById('importFile').value = '';
+        }
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            // 오늘 날짜를 기본값으로 설정
+            document.getElementById('date').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>
