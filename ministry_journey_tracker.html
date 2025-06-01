@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>목회 사역 이동경로 기록</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2d3748;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 0;
+            min-height: 500px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .input-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .form-group textarea {
+            height: 70px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            color: #6b7280;
+            font-size: 11px;
+            margin-top: 4px;
+            display: block;
+            line-height: 1.3;
+        }
+
+        .btn {
+            background: #4299e1;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #3182ce;
+        }
+
+        .btn:active {
+            background: #2c5aa0;
+        }
+
+        .map-section {
+            background: white;
+            position: relative;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        .records-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .records-table th {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .records-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .records-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .record-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto;
+        }
+
+        .delete-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c53030;
+        }
+
+        .export-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: bold;
+            white-space: pre-line;
+            word-wrap: break-word;
+        }
+
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .custom-marker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid white;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .custom-marker-inner {
+            position: relative;
+            z-index: 1;
+        }
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>목회 사역 기록</h1>
+            <p>사역지 이동 경로를 기록하고 관리합니다</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>새 사역지 등록</h2>
+                <form id="journeyForm">
+                    <div class="form-group">
+                        <label for="date">날짜</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">주소</label>
+                        <input type="text" id="address" placeholder="예: 전북 군산시 토성길 16-8" required>
+                        <small>
+                            도로명주소나 지번주소 모두 입력 가능합니다.<br>
+                            찾기 어려우면 간단히 "시/구 + 도로명"만 입력하세요.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="church">교회명</label>
+                        <input type="text" id="church" placeholder="예: 군산교회" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="topic">설교 주제</label>
+                        <textarea id="topic" placeholder="예: 하나님의 사랑과 은혜"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">사역지 추가</button>
+                    <div id="statusMessage"></div>
+                </form>
+            </div>
+
+            <div class="map-section">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <div class="records-section">
+            <h2>사역 기록 목록</h2>
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>날짜</th>
+                        <th>주소</th>
+                        <th>교회명</th>
+                        <th>설교 주제</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="export-section">
+            <button class="btn btn-secondary" onclick="exportToJSON()">데이터 내보내기</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importFromJSON()">
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">데이터 가져오기</button>
+            <button class="btn" onclick="clearAllData()">전체 삭제</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        // 전역 변수
+        let map;
+        let records = [];
+        let markers = [];
+
+        // 지도 초기화
+        function initMap() {
+            map = L.map('map').setView([36.5, 127.5], 7); // 대한민국 중심
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // 주소를 좌표로 변환 (한국 도로명주소 최적화)
+        async function geocodeAddress(address) {
+            // 주소 전처리 - 한국 도로명주소 패턴 처리
+            const cleanAddress = address.trim();
+            
+            // 여러 검색 패턴으로 시도 (한국 도로명주소 특화)
+            const searchPatterns = [];
+            
+            // 1. 원본 주소 그대로
+            searchPatterns.push(`${cleanAddress}, 대한민국`);
+            searchPatterns.push(`${cleanAddress}, South Korea`);
+            
+            // 2. "번길" 처리 - "번길"을 "Gil"로 변환하거나 제거
+            if (cleanAddress.includes('번길')) {
+                const withGil = cleanAddress.replace(/(\d+)번길/g, '$1-gil');
+                searchPatterns.push(`${withGil}, South Korea`);
+                
+                const withoutBeongil = cleanAddress.replace(/(\d+)번길/g, '$1');
+                searchPatterns.push(`${withoutBeongil}, South Korea`);
+                
+                // 번길을 로(ro)로 대체
+                const withRo = cleanAddress.replace(/(\d+)번길/g, '$1-ro');
+                searchPatterns.push(`${withRo}, South Korea`);
+            }
+            
+            // 3. 상위 주소 단위로 검색 (구체적 번지 제거)
+            const addressParts = cleanAddress.split(' ');
+            if (addressParts.length > 3) {
+                // 마지막 번지수 제거한 주소
+                const withoutLastNumber = addressParts.slice(0, -1).join(' ');
+                searchPatterns.push(`${withoutLastNumber}, South Korea`);
+                
+                // 도로명까지만 (번지수 모두 제거)
+                const roadOnly = addressParts.filter(part => 
+                    !part.match(/^\d+(-\d+)?$/) && 
+                    !part.match(/^\d+번길$/)
+                ).join(' ');
+                searchPatterns.push(`${roadOnly}, South Korea`);
+            }
+            
+            // 4. 시/구 단위 검색
+            if (addressParts.length >= 2) {
+                const cityGu = addressParts.slice(0, 2).join(' ');
+                searchPatterns.push(`${cityGu}, South Korea`);
+            }
+            
+            // 5. 영문 변환 시도
+            const englishPatterns = [
+                cleanAddress.replace('광역시', 'Metropolitan City')
+                    .replace('특별시', 'Special City')
+                    .replace('시', ' City')
+                    .replace('구', ' Gu')
+                    .replace('동', ' Dong')
+                    .replace('로', ' Ro')
+                    .replace('길', ' Gil') + ', South Korea'
+            ];
+            searchPatterns.push(...englishPatterns);
+            
+            console.log('검색 패턴들:', searchPatterns);
+            
+            for (let i = 0; i < searchPatterns.length; i++) {
+                const pattern = searchPatterns[i];
+                try {
+                    console.log(`${i + 1}/${searchPatterns.length} 검색 시도: ${pattern}`);
+                    
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?` +
+                        `format=json&` +
+                        `q=${encodeURIComponent(pattern)}&` +
+                        `limit=10&` +
+                        `countrycodes=kr&` +
+                        `addressdetails=1&` +
+                        `accept-language=ko,en&` +
+                        `dedupe=1`
+                    );
+                    
+                    const data = await response.json();
+                    console.log(`검색 결과 (${data.length}개):`, data);
+                    
+                    if (data && data.length > 0) {
+                        // 한국에 위치한 결과 중 가장 적합한 것 선택
+                        let bestResult = null;
+                        
+                        // 1순위: 정확한 주소 매칭
+                        bestResult = data.find(result => {
+                            const displayName = result.display_name.toLowerCase();
+                            const originalLower = cleanAddress.toLowerCase();
+                            return displayName.includes(originalLower.split(' ')[0]) && 
+                                   displayName.includes(originalLower.split(' ')[1] || '');
+                        });
+                        
+                        // 2순위: 한국 위치 확인
+                        if (!bestResult) {
+                            bestResult = data.find(result => 
+                                result.display_name.includes('대한민국') || 
+                                result.display_name.includes('South Korea') ||
+                                result.display_name.includes('Korea') ||
+                                (result.address && result.address.country_code === 'kr')
+                            );
+                        }
+                        
+                        // 3순위: 첫 번째 결과
+                        if (!bestResult) {
+                            bestResult = data[0];
+                        }
+                        
+                        if (bestResult) {
+                            return {
+                                lat: parseFloat(bestResult.lat),
+                                lng: parseFloat(bestResult.lon),
+                                display_name: bestResult.display_name,
+                                search_pattern: pattern
+                            };
+                        }
+                    }
+                    
+                    // API 제한 방지를 위한 대기 (짧은 간격)
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                } catch (error) {
+                    console.error(`검색 패턴 "${pattern}" 실패:`, error);
+                    continue;
+                }
+            }
+            
+            throw new Error(`주소를 찾을 수 없습니다.\n\n다음과 같은 형식으로 다시 시도해보세요:\n\n• 전체 주소: 인천광역시 중구 운남로 82번길\n• 간단하게: 인천 중구 운남로\n• 도로명만: 중구 운남로\n\n또는 근처 대표 건물명이나 교회명을 함께 검색해보세요.`);
+        }
+
+        // 마커 추가 (심플한 번호 마커)
+        function addMarker(record, index) {
+            const markerNumber = index + 1;
+            
+            // 심플한 커스텀 마커 아이콘 생성
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="custom-marker">${markerNumber}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+            
+            const marker = L.marker([record.coordinates.lat, record.coordinates.lng], {
+                icon: customIcon
+            })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="text-align: left; min-width: 220px; font-size: 13px;">
+                        <h3 style="color: #2d3748; margin-bottom: 12px; font-size: 15px; text-align: center;">
+                            ${markerNumber}번째 사역지
+                        </h3>
+                        <p style="margin: 6px 0;"><strong>날짜:</strong> ${record.date}</p>
+                        <p style="margin: 6px 0;"><strong>교회:</strong> ${record.church}</p>
+                        <p style="margin: 6px 0;"><strong>설교 주제:</strong> ${record.topic}</p>
+                        <p style="margin: 6px 0;"><strong>주소:</strong> ${record.address}</p>
+                        ${record.coordinates.display_name ? `<p style="font-size: 11px; color: #666; margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee;"><strong>검색 위치:</strong><br>${record.coordinates.display_name}</p>` : ''}
+                    </div>
+                `);
+            
+            markers.push(marker);
+        }
+
+        // 기록 테이블 업데이트
+        function updateRecordsTable() {
+            const tableBody = document.getElementById('recordsTableBody');
+            tableBody.innerHTML = '';
+            
+            records.forEach((record, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td><div class="record-number">${index + 1}</div></td>
+                    <td>${record.date}</td>
+                    <td>${record.address}</td>
+                    <td>${record.church}</td>
+                    <td>${record.topic}</td>
+                    <td><button class="delete-btn" onclick="deleteRecord(${index})">삭제</button></td>
+                `;
+            });
+        }
+
+        // 상태 메시지 표시
+        function showMessage(message, isSuccess = true) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${isSuccess ? 'status-success' : 'status-error'}`;
+            
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 3000);
+        }
+
+        // 폼 제출 처리
+        document.getElementById('journeyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                date: document.getElementById('date').value,
+                address: document.getElementById('address').value,
+                church: document.getElementById('church').value,
+                topic: document.getElementById('topic').value
+            };
+            
+            try {
+                showMessage('주소를 검색하고 있습니다...', true);
+                
+                const coordinates = await geocodeAddress(formData.address);
+                
+                const record = {
+                    ...formData,
+                    coordinates: coordinates,
+                    id: Date.now()
+                };
+                
+                records.push(record);
+                addMarker(record, records.length - 1);
+                updateRecordsTable();
+                
+                // 폼 초기화
+                document.getElementById('journeyForm').reset();
+                // 오늘 날짜 다시 설정
+                document.getElementById('date').valueAsDate = new Date();
+                
+                // 지도 뷰 조정
+                if (records.length > 1) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    map.setView([coordinates.lat, coordinates.lng], 13);
+                }
+                
+                showMessage(`사역지가 추가되었습니다!\n위치: ${coordinates.display_name || '위치 확인됨'}`, true);
+                
+            } catch (error) {
+                showMessage(`오류: ${error.message}`, false);
+                console.error('주소 검색 오류:', error);
+            }
+        });
+
+        // 기록 삭제
+        function deleteRecord(index) {
+            if (confirm('이 기록을 삭제하시겠습니까?')) {
+                // 마커 삭제
+                if (markers[index]) {
+                    map.removeLayer(markers[index]);
+                }
+                
+                // 배열에서 제거
+                records.splice(index, 1);
+                markers.splice(index, 1);
+                
+                // 마커와 테이블 재구성
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                records.forEach((record, idx) => {
+                    addMarker(record, idx);
+                });
+                
+                updateRecordsTable();
+                showMessage('기록이 삭제되었습니다.', true);
+            }
+        }
+
+        // 전체 데이터 삭제
+        function clearAllData() {
+            if (confirm('모든 사역 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                records = [];
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                updateRecordsTable();
+                map.setView([36.5, 127.5], 7);
+                showMessage('모든 데이터가 삭제되었습니다.', true);
+            }
+        }
+
+        // 데이터 내보내기
+        function exportToJSON() {
+            if (records.length === 0) {
+                showMessage('내보낼 데이터가 없습니다.', false);
+                return;
+            }
+            
+            const dataStr = JSON.stringify(records, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `목회사역기록_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showMessage('데이터가 내보내기되었습니다.', true);
+        }
+
+        // 데이터 가져오기
+        function importFromJSON() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedRecords = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(importedRecords)) {
+                        throw new Error('올바른 형식의 데이터 파일이 아닙니다.');
+                    }
+                    
+                    // 기존 마커 삭제
+                    markers.forEach(marker => map.removeLayer(marker));
+                    markers = [];
+                    
+                    // 새 데이터 적용
+                    records = importedRecords;
+                    
+                    records.forEach((record, index) => {
+                        if (record.coordinates) {
+                            addMarker(record, index);
+                        }
+                    });
+                    
+                    updateRecordsTable();
+                    
+                    if (records.length > 0) {
+                        const group = new L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    }
+                    
+                    showMessage(`${records.length}개의 기록이 가져와졌습니다.`, true);
+                    
+                } catch (error) {
+                    showMessage(`데이터 가져오기 실패: ${error.message}`, false);
+                }
+            };
+            reader.readAsText(file);
+            
+            // 파일 입력 초기화
+            document.getElementById('importFile').value = '';
+        }
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            initMap();
+            
+            // 오늘 날짜를 기본값으로 설정
+            document.getElementById('date').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>
